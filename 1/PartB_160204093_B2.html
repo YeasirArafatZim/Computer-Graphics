@@ -1,0 +1,371 @@
+<html>
+<title>Assignment 1</title>
+<div style="padding-left:26%;">
+
+<canvas id="webglcanvas" width="750" height="580"></canvas>
+
+<script>
+
+	function color(r,g,b) {
+		var u_color_location = gl.getUniformLocation(prog, "u_color");
+		var color = new Float32Array( [r, g, b] );
+		gl.uniform3fv(u_color_location,  color);
+	
+	}
+	
+	function addList(l1) {
+		for(i = 0;i<l1.length;i++){
+			list[list.length]= l1[i];
+		}
+	}
+	
+    var canvas = document.getElementById("webglcanvas"); 
+    var  gl = canvas.getContext("webgl");
+	
+
+    var vertexShaderSource =
+       `attribute vec3 a_coords;
+	    uniform float x_shift;
+		uniform float y_shift;
+        void main() {
+            gl_Position = vec4(a_coords.x + x_shift, a_coords.y + y_shift, a_coords.z, 1.0);
+			
+			
+        }`;
+
+
+	var fragmentShaderSource =
+
+       `precision mediump float;
+        uniform vec3 u_color;
+        void main() {
+            gl_FragColor = vec4(u_color, 1.0);
+        }`;
+
+    
+    var vsh = gl.createShader( gl.VERTEX_SHADER );
+    gl.shaderSource( vsh, vertexShaderSource );
+    gl.compileShader( vsh );
+	
+    var fsh = gl.createShader( gl.FRAGMENT_SHADER );
+    gl.shaderSource( fsh, fragmentShaderSource );
+    gl.compileShader( fsh );
+    
+    var prog = gl.createProgram(); 
+    
+    gl.attachShader( prog, vsh ); 
+    gl.attachShader( prog, fsh );
+    gl.linkProgram( prog ); 
+    gl.useProgram(prog); 
+	
+	
+	
+	var list = [-.8,-.7,0,   //front
+            -0.8,-.1,0,
+            0.2,-0.8,0,
+            0.2,.001,0,
+			
+			-.8,-.7,0,    //line
+			0.2,-0.8,0,
+			0.2,.001,0,
+            -0.8,-.1,0,
+            
+			.2,-.8,0.0,    // right
+			.2,.001,0.0,
+			.7,-.6,0.0,
+			0.7,0.001,0.0,
+			
+			.7,.001,0.0,   // right
+			.2,.001,0.0,
+			.45,.5,0.0,
+			
+			-.65,.3,0,     // up
+			.45,.5,0,
+			-.9,-.108,0,
+			.25,-.10,0,
+			
+			.45,.5,0,      //up-right
+			.419,.41,0,
+			.8,.001,0,
+			.7,.001,0,
+			
+			-.7,-.5,0,    // left-window
+			-.5,-.52,0,
+			-.7,-.25,0,
+			-.5,-.25,0,
+			
+			
+			.34,-.45,0,   // right-window
+			.6,-.36,0,
+			.34,-.1,0,
+			.6,-.07,0,
+			
+			-.8,-.7,0,		//floor left
+			.2,-.8,0,
+			-.9,-.79,0.0,
+			.3,-.96,0,
+			
+			.2,-.8,0,    //floor right
+			.3,-.96,0,
+			.7,-.6,0,
+			.8,-.68,0,
+			
+			-.27,-.815,0,   //stair
+			0,-.845,0,
+			-.45,-.88,0,
+			-.1,-.94,0,
+			
+			-.45,-.88,0, //stair-left
+			-.1,-.94,0,
+			-.45,-.94,0,
+			-.1,-1,0,
+			
+			-.1,-.94,0,  //stair-right
+			-.1,-1,0,
+			0,-.845,0,
+			0,-.9,0,
+			
+			-.665,-.49,0,    // left-window-inner
+			-.508,-.51,0,
+			-.665,-.285,0,
+			-.508,-.277,0,
+			
+			-.59,-.28,0,    // left window line
+			-.59,-.5,0,
+			-.665,-.38,0,
+			-.508,-.39,0,
+			
+			.35,-.43,0,   // right-window-inner
+			.56,-.35,0,
+			.348,-.14,0,
+			.562,-.105,0,
+			
+			.46,-.387,0,    // right window line
+			.46,-.11,0,
+			.35,-.3,0,    // right window line
+			.57,-.23,0,
+			
+			-.27,-.75,0,   //door background
+			0,-.78,0,
+			-.27,-.2,0,
+			0,-.2,0,
+			
+			-.27,-.75,0,   //door
+			0,-.78,0,
+			-.27,-.2,0,
+			0,-.2,0,
+			
+			-.22,-.7,0,   //door inner
+			-.06,-.72,0,
+			-.22,-.26,0,
+			-.06,-.26,0,
+			
+			-.05,-.52,0,   //door lock
+			-.03,-.52,0,
+			-.05,-.55,0,
+			-.03,-.55,0
+            ];	
+	
+	var x_shift_location = gl.getUniformLocation(prog, "x_shift");
+	var x_shift = 0.0;
+	gl.uniform1f(x_shift_location, x_shift);
+	var y_shift_location = gl.getUniformLocation(prog, "y_shift");
+	var y_shift = 0.0;
+	gl.uniform1f(y_shift_location, y_shift);
+	
+function drawHouse(){
+    var a_coords_location = gl.getAttribLocation(prog, "a_coords");
+    var coords = new Float32Array( list );
+	
+    var a_coords_buffer = gl.createBuffer(); 
+    gl.bindBuffer(gl.ARRAY_BUFFER, a_coords_buffer); 
+    gl.bufferData(gl.ARRAY_BUFFER, coords, gl.STATIC_DRAW);  
+    gl.vertexAttribPointer(a_coords_location, 3, gl.FLOAT, false, 0, 0); 
+    gl.enableVertexAttribArray(a_coords_location);
+	
+	color(.8,.8,.8);
+	
+	//front wall
+	gl.clearColor(0.9, 0.9, 0.9, 1);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.TRIANGLE_STRIP, 0,4);
+	
+	color(0.0,0.0,0.0);
+	gl.drawArrays(gl.LINE_LOOP, 4,4);
+	//side wall
+	color(.5,0.5,0.5);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 8,4);
+	gl.drawArrays(gl.TRIANGLES, 12,3);
+	// front ceiling
+	color(.9,0,0);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 15,4);
+	// back ceiling
+	color(.6,0,0);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 19,4);
+	//left window
+	color(.375,.27,.0);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 23,4);
+	
+	//write window
+	color(.238,.21,.08);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 27,4);
+	
+	//left floor
+	color(.238,.21,.08);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 31,4);
+	
+	//right floor
+	color(0,0,.0);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 35,4);
+	
+	//stair
+	color(0,.21,.08);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 39,4);
+	
+	//stair-left
+	color(.1,.25,.1);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 43,4);
+	
+	//stair-right
+	color(0,0,.0);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 47,4);
+	
+	//left-window-inner
+	color(1,1,1);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 51,4);
+	
+	//left window line
+	color(0,0,.0);
+	gl.drawArrays(gl.LINES, 55,4);
+	
+	//right window inner
+	color(1,1,1);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 59,4);
+	
+	//right window line
+	color(0,0,0);
+	gl.drawArrays(gl.LINES, 63,4);
+	
+	//door background
+	color(0,0,0);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 67,4);
+	
+	//door
+	color(.145,.39,.64);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 71,4);
+	
+	//door inner
+	color(1,1,1);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 75,4);
+	
+	//door lock
+	color(0,0,0);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 79,4);
+	}
+	drawHouse();
+	
+	var count = 1;
+	
+	
+	document.onkeydown = function(event) {
+    if(event.keyCode == 79){
+        openDoor();
+		}
+	if(event.keyCode == 37){
+        leftShift();
+		}
+	if(event.keyCode == 38){
+        upShift();
+		}
+	if(event.keyCode == 39){
+        rightShift();
+		}
+	if(event.keyCode == 40){
+        downShift();
+		}
+	}
+	
+	function downShift()
+	{ 
+	y_shift = y_shift - 0.1;
+    gl.uniform1f(y_shift_location, y_shift);
+	drawHouse();
+	}
+	
+	function upShift()
+	{ 
+	y_shift = y_shift + 0.1;
+    gl.uniform1f(y_shift_location, y_shift);
+	drawHouse();
+	}
+	function rightShift()
+	{ 
+	x_shift = x_shift + 0.1;
+    gl.uniform1f(x_shift_location, x_shift);
+	drawHouse();
+	}
+	
+	function leftShift()
+	{ 
+	x_shift = x_shift - 0.1;
+    gl.uniform1f(x_shift_location, x_shift);
+	drawHouse();
+	}
+	
+	function openDoor()
+	{ 
+	
+	if(count == 1){
+	list1 = [-.27,-.75,0,   //door background
+			0,-.78,0,
+			-.27,-.2,0,
+			0,-.2,0,
+			
+			-.27,-.75,0,   //door
+			-.1,-.68,0,   
+			-.27,-.2,0,
+			-.1,-.265,0,
+			
+			-.22,-.7,0,   //door inner
+			-.12,-.67,0,
+			-.22,-.26,0,
+			-.12,-.285,0,
+			
+			-.116,-.495,0,   //door lock
+			-.103,-.495,0,    //right up
+			-.116,-.515,0,    // left down
+			-.103,-.515,0      //right down
+			];
+	addList(list1);
+	}
+	if(count % 2 == 1){
+	count += 1;
+	drawHouse();
+	
+	//door background
+	color(0,0,0);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 83,4);
+	//door
+	color(.145,.39,.64);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 87,4);
+	
+	//door inner
+	color(.8,.8,.8);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 91,4);
+	
+	//door lock
+	color(0,0,0);
+	gl.drawArrays(gl.TRIANGLE_STRIP, 95,4);
+	}
+	
+	else {
+	count += 1;
+	drawHouse();
+	}
+	}
+	
+</script>
+</div>
+
+
+</html>

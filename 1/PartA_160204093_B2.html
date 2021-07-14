@@ -1,0 +1,117 @@
+<!-- 
+Assignment 1
+Md. Yeasir Arafat
+16.02.04.093
+ -->
+<html>
+<title>Assignment 1</title>
+<div style="padding-left:26%;">
+
+<canvas id="webglcanvas" width="600" height="600"></canvas>
+
+<script>
+
+    var canvas = document.getElementById("webglcanvas"); 
+    var  gl = canvas.getContext("webgl");
+	
+
+    var vertexShaderSource =
+       `attribute vec3 a_coords;
+        void main() {
+            gl_Position = vec4(a_coords, 1.0);
+			//vec3 offset = vec3(0.0, 0.0,0.0);
+			//float dist = distance(a_coords, offset);
+			float len = 10.0 * length(a_coords);
+			gl_PointSize =  len;
+        }`;
+
+
+	var fragmentShaderSource =
+
+       `precision mediump float;
+        uniform vec3 u_color;
+        void main() {
+            gl_FragColor = vec4(u_color, 1.0);
+        }`;
+
+    
+    var vsh = gl.createShader( gl.VERTEX_SHADER );
+    gl.shaderSource( vsh, vertexShaderSource );
+    gl.compileShader( vsh );
+	
+    var fsh = gl.createShader( gl.FRAGMENT_SHADER );
+    gl.shaderSource( fsh, fragmentShaderSource );
+    gl.compileShader( fsh );
+    
+    var prog = gl.createProgram(); 
+    
+    gl.attachShader( prog, vsh ); 
+    gl.attachShader( prog, fsh );
+    gl.linkProgram( prog ); 
+    gl.useProgram(prog); 
+	
+	
+	var list = [0.0, 0.0,0.0];
+	var theta = 0.0;
+	var i;
+	for (i = 0; i < 100; i++) {
+		theta += .12;
+		var x = .03*theta * Math.cos(theta);
+		var y = .03*theta * Math.sin(theta);
+		list[list.length] = x;
+		list[list.length] = y;
+		list[list.length] = 0.0;
+	} 
+    var a_coords_location = gl.getAttribLocation(prog, "a_coords");
+    var coords = new Float32Array( list );
+
+    var a_coords_buffer = gl.createBuffer(); 
+    gl.bindBuffer(gl.ARRAY_BUFFER, a_coords_buffer); 
+    gl.bufferData(gl.ARRAY_BUFFER, coords, gl.STATIC_DRAW);  
+    gl.vertexAttribPointer(a_coords_location, 3, gl.FLOAT, false, 0, 0); 
+    gl.enableVertexAttribArray(a_coords_location);
+	
+	var u_color_location = gl.getUniformLocation(prog, "u_color");
+	var color = new Float32Array( [1.0, 0.0, 0.0] );
+	gl.uniform3fv(u_color_location,  color);
+	
+	gl.clearColor(0.75, 0.75, 0.75, 1.0);
+    gl.clear(gl.COLOR_BUFFER_BIT);
+    gl.drawArrays(gl.POINTS, 0, 101); 
+	
+	var tpoints = 101;
+	
+	canvas.onmousedown = function ()
+	{  
+		tpoints += 2;
+		for (i = 0; i < 2; i++) {
+		theta += .12;
+		var x = .03*theta * Math.cos(theta);
+		var y = .03*theta * Math.sin(theta);
+		list[list.length] = x;
+		list[list.length] = y;
+		list[list.length] = 0.0;
+		} 
+		
+		var a_coords_location = gl.getAttribLocation(prog, "a_coords");
+		var coords = new Float32Array( list );
+
+		var a_coords_buffer = gl.createBuffer(); 
+		gl.bindBuffer(gl.ARRAY_BUFFER, a_coords_buffer); 
+		gl.bufferData(gl.ARRAY_BUFFER, coords, gl.STATIC_DRAW);  
+		gl.vertexAttribPointer(a_coords_location, 3, gl.FLOAT, false, 0, 0); 
+		gl.enableVertexAttribArray(a_coords_location);
+		
+		
+		
+		gl.clearColor(0.75, 0.75, 0.75, 1.0);
+		gl.clear(gl.COLOR_BUFFER_BIT);
+		gl.drawArrays(gl.POINTS, 0, tpoints);
+	};
+	
+
+</script>
+</div>
+
+
+</html>
